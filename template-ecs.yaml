@@ -14,6 +14,11 @@ Parameters:
     Type: String
     Default: 'Z07408222E17AUYRGBKTC' # ※ご自身の Route53 ホストゾーンIDに書き換えてください！
     Description: 'Route 53 Hosted Zone ID for relation2024.com'
+  ImageTag:
+    Type: String
+    Default: 'latest'
+    Description: 'Docker image tag for ECR'
+
 
 Resources:
   # ------------------------------------------------------------#
@@ -174,7 +179,7 @@ Resources:
       ExecutionRoleArn: !GetAtt EcsTaskExecutionRole.Arn
       ContainerDefinitions:
         - Name: app
-          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/rd-cicd-app-repo:latest'
+          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/rd-cicd-app-repo:${ImageTag}'
           PortMappings:
             - ContainerPort: 80
           Environment:
