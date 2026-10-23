@@ -6,7 +6,7 @@ Resources:
   # 1. ネットワーク環境 (VPC)
   # ==========================================
   RdVPC:
-    Type: 'AWS::EC2::VCP'
+    Type: 'AWS::EC2::VPC'
     Properties:
       CidrBlock: '10.0.0.0/16'
       EnableDnsSupport: true
