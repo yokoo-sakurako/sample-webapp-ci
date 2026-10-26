@@ -1,0 +1,28 @@
+name: 'App Test (CI)'
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - '.github/workflows/app-ci.yaml' # CIファイル自体の変更も検知するように追加
+
+jobs:
+  php-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+          
+      - name: Install Dependencies & Run Test
+        run: |
+          cd app
+          composer install --prefer-dist --no-progress
+          ./vendor/bin/phpunit tests/TaskServiceTest.php
