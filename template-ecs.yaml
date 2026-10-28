@@ -178,7 +178,7 @@ Resources:
       ExecutionRoleArn: !GetAtt EcsTaskExecutionRole.Arn
       ContainerDefinitions:
         - Name: app
-          Image: !Sub'${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/rd-cicd-app-repo:${ImageTag}'
+          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/rd-cicd-app-repo:${ImageTag}'
           PortMappings:
             - ContainerPort: 80
           Environment:
