@@ -65,3 +65,4 @@ jobs:
           no-fail-on-empty-changeset: "1"
           capabilities: CAPABILITY_IAM,CAPABILITY_NAMED_IAM
           parameter-overrides: "ImageTag=${{ github.sha }}"
+
