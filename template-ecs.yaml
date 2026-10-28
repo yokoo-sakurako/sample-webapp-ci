@@ -14,7 +14,7 @@ Parameters:
     Type: String
     Default: 'Z07408222E17AUYRGBKTC' # ※ご自身の Route53 ホストゾーンIDに書き換えてください！
     Description: 'Route 53 Hosted Zone ID for relation2024.com'
-　ImageTag:
+  ImageTag:
     Type: String
     Default: 'latest'
     Description: 'Docker image tag for ECR'
