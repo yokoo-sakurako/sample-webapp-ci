@@ -1,0 +1,67 @@
+name: 'Infrastructure & App (CD)'
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-all:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ap-northeast-1
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 1. 土台インフラ（VPC, ECR等）のデプロイ
+      - name: Deploy Base Stack
+        uses: aws-actions/aws-cloudformation-github-deploy@v1
+        with:
+          name: rd-infra-base
+          template: template-base.yaml
+          no-fail-on-empty-changeset: "1"
+          capabilities: CAPABILITY_IAM,CAPABILITY_NAMED_IAM
+
+      # 2. ネットワーク（NAT Gateway等）のデプロイ
+      - name: Deploy NAT Stack
+        uses: aws-actions/aws-cloudformation-github-deploy@v1
+        with:
+          name: rd-nat-network
+          template: template-nat.yaml
+          no-fail-on-empty-changeset: "1"
+          capabilities: CAPABILITY_IAM,CAPABILITY_NAMED_IAM
+
+      # 3. アプリのDockerビルド＆ECRへPush（SHAタグ + latestタグ）
+      - name: Build and push image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: rd-cicd-app-repo
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -f ./app/docker/php/Dockerfile \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest ./app
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      # 4. ECS Stack のデプロイ（新イメージタグを指定）
+      - name: Deploy ECS Stack
+        uses: aws-actions/aws-cloudformation-github-deploy@v1
+        with:
+          name: rd-cicd-ecs
+          template: template-ecs.yaml
+          no-fail-on-empty-changeset: "1"
+          capabilities: CAPABILITY_IAM,CAPABILITY_NAMED_IAM
+          parameter-overrides: "ImageTag=${{ github.sha }}"
